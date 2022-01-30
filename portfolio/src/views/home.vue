@@ -12,7 +12,9 @@
               <p class="project-name">{{ project.projectName }}</p>
               <p class="work-period">{{ project.startDate }} ～ {{ project.finishDate }}</p>
             </div>
-            <div class="user-icons">プロジェクトユーザーアイコン</div>
+            <div class="user-icons">
+              <img src="https://graph.facebook.com/1528282460874060/picture" alt="">
+            </div>
           </div>
           <div class="card-right">
             <div class="close-btn"
@@ -269,6 +271,10 @@ export default {
           color: #bbbbbb;
         }
       }
+  }
+
+  img {
+    border-radius: 50%;
   }
 
 
