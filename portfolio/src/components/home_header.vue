@@ -1,6 +1,7 @@
 <template>
     <div class="header clearfix">
       <div class="header-left">
+        <img :src="currentUserIcon" alt="" class="user-icon">
         <p class="user-name">{{currentUserName}} 様</p>
       </div>
       <div class="header-right">
@@ -10,18 +11,28 @@
 </template>
 
 <script>
-import { getAuth,signOut } from "firebase/auth";
+import {
+  getAuth,
+  signOut
+  } from "firebase/auth";
 import {
   collection,
   getFirestore,
   getDocs
   } from "firebase/firestore";
+import {
+  getStorage,
+  ref,
+  getDownloadURL
+  } from "firebase/storage";
 
 export default {
   name: 'HomeHeader',
   data() {
     return {
       userList: [],
+      noImage: '',
+      userIcon: ''
     }
   },
   methods: {
@@ -42,10 +53,22 @@ export default {
         if(value.address === currentUserEmail) {
           UserName = value.name;
         }
-        return UserName;
       });
       return UserName;
-    }
+    },
+    currentUserIcon() {
+      const currentUserEmail = this.$store.getters.currentUserEmail;
+      let userIcon = this.noImage;
+      this.userList.forEach((value) => {
+        if(value.address === currentUserEmail) {
+          userIcon = value.iconPath;
+        }
+        if(userIcon === '') {
+          userIcon = this.noImage;
+        }
+      });
+      return userIcon;
+    },
   },
   created() {
     getDocs(collection(getFirestore(), 'users'))
@@ -57,6 +80,15 @@ export default {
       .catch(() => {
         console.log('storeアクセス失敗')
       })
+
+    getDownloadURL(ref(getStorage(), 'icon/no-image.png'))
+    .then((url) => {
+      this.noImage = url;
+      console.log(this.noImage);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
   }
 }
 </script>
@@ -64,7 +96,8 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
   .header {
-    height: 50px;
+    height: 55px;
+    padding-bottom: 5px;
     border-bottom: solid 1px #333333;
 
     .header-left {
@@ -72,9 +105,18 @@ export default {
       float: left;
       text-align: center;
       line-height: 50px;
+      display: flex;
+      justify-content: center;
+
+      .user-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+      }
 
       .user-name {
         font-size: 0.9em;
+        margin-left: 15px;
       }
 
     }
