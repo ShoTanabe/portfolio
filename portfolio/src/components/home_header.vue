@@ -35,16 +35,6 @@ export default {
       userIcon: ''
     }
   },
-  methods: {
-    logout() {
-      const auth = getAuth();
-      signOut(auth).then(() => {
-          this.$router.push('/');
-      }).catch((error) => {
-        console.log(error);
-      });
-    }
-  },
   computed: {
     currentUserName() {
       const currentUserEmail = this.$store.getters.currentUserEmail;
@@ -69,6 +59,17 @@ export default {
       });
       return userIcon;
     },
+  },
+  methods: {
+    logout() {
+      const auth = getAuth();
+      signOut(auth).then(() => {
+          this.$store.commit('updateCurrentUserEmail', '');
+          this.$router.push('/');
+      }).catch((error) => {
+        console.log(error);
+      });
+    }
   },
   created() {
     getDocs(collection(getFirestore(), 'users'))
@@ -96,7 +97,7 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
   .header {
-    height: 55px;
+    height: 45px;
     padding-bottom: 5px;
     border-bottom: solid 1px #333333;
 
@@ -104,13 +105,13 @@ export default {
       width: 50%;
       float: left;
       text-align: center;
-      line-height: 50px;
+      line-height: 40px;
       display: flex;
       justify-content: center;
 
       .user-icon {
-        width: 50px;
-        height: 50px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
       }
 

@@ -120,7 +120,6 @@ export default {
                   this.projectsData.push(projectData)
                 })
                 this.$store.commit('updateProjectList', this.projectsData);
-                console.log(this.projectList);
               }
             )
             .catch(() => {

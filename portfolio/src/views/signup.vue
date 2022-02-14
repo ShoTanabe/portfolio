@@ -138,7 +138,6 @@ export default {
               querySnapshot.forEach(doc => {
                 this.userList.push(doc.data());
               });
-              console.log(this.userList);
               const list = this.userList;
               if(list.some(list => list.address === user.email) === false){
                 const userData = {
@@ -149,22 +148,21 @@ export default {
                 }
                 addDoc(collection(getFirestore(), 'users'), userData)
                 .then(() => {
-                  console.log('store完了')
-                  this.success = true;
+                  this.$store.commit('updateCurrentUserEmail', user.email);
+                  this.$router.push('/home');
                   }
                 )
                 .catch(() => {
                   console.log('store失敗')
                 })
               } else {
-                console.log('もう登録済み');
+                this.$store.commit('updateCurrentUserEmail', user.email);
+                this.$router.push('/home');
               }
             })
             .catch(() => {
               console.log('storeアクセス失敗')
             })
-
-
 
           // ...
         }).catch((error) => {
@@ -209,22 +207,21 @@ export default {
                 }
                 addDoc(collection(getFirestore(), 'users'), userData)
                 .then(() => {
-                  console.log('store完了')
-                  this.success = true;
+                  this.$store.commit('updateCurrentUserEmail', user.email);
+                  this.$router.push('/home');
                   }
                 )
                 .catch(() => {
                   console.log('store失敗')
                 })
               } else {
-                console.log('もう登録済み');
+                this.$store.commit('updateCurrentUserEmail', user.email);
+                this.$router.push('/home');
               }
             })
             .catch(() => {
               console.log('storeアクセス失敗')
             })
-
-
 
         })
         .catch((error) => {
@@ -239,19 +236,17 @@ export default {
     }
   },
   created() {
-
-      getDocs(collection(getFirestore(), 'users'))
-        .then((querySnapshot) => {
-          console.log(querySnapshot);
-          querySnapshot.forEach(doc => {
-            this.userList.push(doc.data());
-          });
-          console.log(this.userList);
-        })
-        .catch(() => {
-          console.log('storeアクセス失敗')
-        })
-
+    getDocs(collection(getFirestore(), 'users'))
+      .then((querySnapshot) => {
+        console.log(querySnapshot);
+        querySnapshot.forEach(doc => {
+          this.userList.push(doc.data());
+        });
+        console.log(this.userList);
+      })
+      .catch(() => {
+        console.log('storeアクセス失敗')
+      })
   }
 }
 </script>

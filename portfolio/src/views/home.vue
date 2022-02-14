@@ -14,6 +14,7 @@
             </div>
             <div class="user-icons">
               <img src="https://graph.facebook.com/1528282460874060/picture" alt="">
+              <img src="https://graph.facebook.com/1528282460874060/picture" alt="">
             </div>
           </div>
           <div class="card-right">
@@ -89,7 +90,6 @@ export default {
         if(value.address === currentUserEmail) {
           UserName = value.name;
         }
-        return UserName;
       });
       return UserName;
     },
@@ -102,7 +102,7 @@ export default {
         }
       })
       return assignedProjects;
-    }
+    },
   },
   methods: {
     openMakingProjectModal() {
@@ -233,12 +233,26 @@ export default {
         margin: 0 10px 0 50px ;
         padding: 30px 20px;
         width: 60%;
+        display: flex;
 
         @media screen and (max-width: 760px) {
           text-align: center;
           margin: 0 0 15px 0;
           padding: 0;
           width: 90%;
+        }
+
+        img {
+          border-radius: 50%;
+          width: 40px;
+          height: 40px;
+          margin-left: 
+          5px;
+
+        &:first-child {
+          margin-left: 0px;
+        }
+
         }
       }
     }
@@ -272,15 +286,6 @@ export default {
         }
       }
   }
-
-  img {
-    border-radius: 50%;
-  }
-
-
-
-
-
 
 }
 
