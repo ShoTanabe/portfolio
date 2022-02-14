@@ -23,7 +23,8 @@ import {
 import {
   getStorage,
   ref,
-  getDownloadURL
+  getDownloadURL,
+  listAll
   } from "firebase/storage";
 
 export default {
@@ -32,7 +33,8 @@ export default {
     return {
       userList: [],
       noImage: '',
-      userIcon: ''
+      userIcon: '',
+      iconsPath: []
     }
   },
   computed: {
@@ -82,10 +84,29 @@ export default {
         console.log('storeアクセス失敗')
       })
 
-    getDownloadURL(ref(getStorage(), 'icon/no-image.png'))
+    getDownloadURL(ref(getStorage(), 'icon/image0.png'))
     .then((url) => {
       this.noImage = url;
       console.log(this.noImage);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+
+    listAll(ref(getStorage(), 'icon'))
+    .then(res => {
+      res.items.forEach(itemRef => {
+        const iconName = itemRef.name;
+        getDownloadURL(ref(getStorage(), itemRef))
+        .then(url => {
+          this.iconsPath.push({iconName: iconName, iconUrl: url})
+        })
+        .catch(() => {
+          console.log('プリセットパスを取得できません')
+        })
+      })
+      console.log(this.iconsPath);
+
     })
     .catch((error) => {
       console.log(error);

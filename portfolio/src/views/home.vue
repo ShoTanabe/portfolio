@@ -246,8 +246,7 @@ export default {
           border-radius: 50%;
           width: 40px;
           height: 40px;
-          margin-left: 
-          5px;
+          margin-left: 5px;
 
         &:first-child {
           margin-left: 0px;

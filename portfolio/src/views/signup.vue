@@ -65,7 +65,7 @@ export default {
       name: '',
       address: '',
       password: '',
-      iconPath: 'https://graph.facebook.com/1528282460874060/picture',
+      iconPath: '',
       userList:[]
     }
   },
@@ -184,11 +184,6 @@ export default {
           // The signed-in user info.
           const user = result.user;
           console.log(user);
-
-          // This gives you a Facebook Access Token. You can use it to access the Facebook API.
-          const credential = FacebookAuthProvider.credentialFromResult(result);
-          const accessToken = credential.accessToken;
-          console.log(accessToken);
 
           getDocs(collection(getFirestore(), 'users'))
             .then((querySnapshot) => {

@@ -23,8 +23,8 @@
         <button class="stretched-link" type="button" @click="login">ログイン</button>
       </div>
       <div class="flex-container sns-btns">
-        <div class="fb-btn"><i class="fab fa-facebook-f"></i> facebookでログイン</div>
-        <div class="tw-btn"><i class="fab fa-twitter"></i> twitterでログイン</div>
+        <div class="fb-btn" @click="facebookLogin"><i class="fab fa-facebook-f"></i> facebookでログイン</div>
+        <div class="tw-btn" @click="twitterLogin"><i class="fab fa-twitter"></i> twitterでログイン</div>
       </div>
       <router-link to="/signup"><p class="sf-link">新規登録はこちらから</p></router-link>
     </form>
@@ -32,14 +32,27 @@
 </template>
 
 <script>
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  TwitterAuthProvider,
+  FacebookAuthProvider
+  } from "firebase/auth";
+import {
+  collection,
+  addDoc,
+  getFirestore,
+  getDocs
+  } from "firebase/firestore";
 
 export default {
   data() {
     return {
       address: '',
       password: '',
-      failed: false
+      failed: false,
+      userList: []
     }
   },
   methods: {
@@ -65,6 +78,123 @@ export default {
     },
     resetResultMessage() {
       this.failed = false;
+    },
+    twitterLogin() {
+      const provider = new TwitterAuthProvider();
+
+      const auth = getAuth();
+      signInWithPopup(auth, provider)
+        .then((result) => {
+          // This gives you a the Twitter OAuth 1.0 Access Token and Secret.
+          // You can use these server side with your app's credentials to access the Twitter API.
+          const credential = TwitterAuthProvider.credentialFromResult(result);
+          const token = credential.accessToken;
+          const secret = credential.secret;
+
+          console.log(token);
+          console.log(secret);
+
+          // The signed-in user info.
+          const user = result.user;
+
+          getDocs(collection(getFirestore(), 'users'))
+            .then((querySnapshot) => {
+              this.userList = [];
+              querySnapshot.forEach(doc => {
+                this.userList.push(doc.data());
+              });
+              const list = this.userList;
+              if(list.some(list => list.address === user.email) === false){
+                const userData = {
+                  name: user.displayName,
+                  address: user.email,
+                  password: '',
+                  iconPath: user.photoURL
+                }
+                addDoc(collection(getFirestore(), 'users'), userData)
+                .then(() => {
+                  this.$store.commit('updateCurrentUserEmail', user.email);
+                  this.$router.push('/home');
+                  }
+                )
+                .catch(() => {
+                  console.log('store失敗')
+                })
+              } else {
+                this.$store.commit('updateCurrentUserEmail', user.email);
+                this.$router.push('/home');
+              }
+            })
+            .catch(() => {
+              console.log('storeアクセス失敗')
+            })
+
+          // ...
+        }).catch((error) => {
+          // Handle Errors here.
+          const errorCode = error.code;
+          const errorMessage = error.message;
+
+          console.log(errorCode);
+          console.log(errorMessage);
+
+        });
+
+    },
+    facebookLogin() {
+      const provider = new FacebookAuthProvider();
+      const auth = getAuth();
+      signInWithPopup(auth, provider)
+        .then((result) => {
+          // The signed-in user info.
+          const user = result.user;
+          console.log(user);
+
+          // This gives you a Facebook Access Token. You can use it to access the Facebook API.
+
+          getDocs(collection(getFirestore(), 'users'))
+            .then((querySnapshot) => {
+              this.userList = [];
+              querySnapshot.forEach(doc => {
+                this.userList.push(doc.data());
+              });
+              console.log(this.userList);
+              const list = this.userList;
+              if(list.some(list => list.address === user.email) === false){
+                const userData = {
+                  name: user.displayName,
+                  address: user.email,
+                  password: '',
+                  iconPath: user.photoURL
+                }
+                addDoc(collection(getFirestore(), 'users'), userData)
+                .then(() => {
+                  this.$store.commit('updateCurrentUserEmail', user.email);
+                  this.$router.push('/home');
+                  }
+                )
+                .catch(() => {
+                  console.log('store失敗')
+                })
+              } else {
+                this.$store.commit('updateCurrentUserEmail', user.email);
+                this.$router.push('/home');
+              }
+            })
+            .catch(() => {
+              console.log('storeアクセス失敗')
+            })
+
+        })
+        .catch((error) => {
+          // Handle Errors here.
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          console.log(errorCode);
+          console.log(errorMessage);
+
+        });
+
     }
   }
 }
@@ -92,6 +222,7 @@ export default {
     border-radius: 4px;
     width: 200px;
     text-align: center;
+    cursor: pointer;
   }
 
   .tw-btn {
@@ -103,6 +234,7 @@ export default {
     border-radius: 4px;
     width: 200px;
     text-align: center;
+    cursor: pointer;
   }
 
 </style>
