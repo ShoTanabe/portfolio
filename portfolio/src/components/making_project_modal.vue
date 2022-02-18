@@ -27,7 +27,10 @@
             </p>
             <p class="modal-text">参加ユーザー</p>
             <div class="modal-textbox">
-              <div v-for="(userName, i) in userNames" :key="i" class="user-select">
+              <div
+              v-for="(userName, i) in userNames"
+              :key="i"
+              class="user-select">
                 <label :for="userName+i">
                 <input
                   :id="userName+i"
@@ -64,6 +67,7 @@ export default {
       showStartDateError: false,
       showFinishDateError: false,
       showFinishDateError2: false,
+      usersData: [],
       userNames: [],
       projectsData: []
     }
@@ -97,12 +101,26 @@ export default {
       } else if (this.startDate > this.finishDate) {
         this.showFinishDateError2 = true;
       } else {
+
+        const memberIcons = [];
+        this.members.forEach((value) => {
+          for(let i = 0; i <= this.usersData.length-1; i++){
+            if(this.usersData[i].name == value){
+              memberIcons.push(this.usersData[i].iconPath);
+            }
+          }
+        })
+        
         const newProject = {
           projectName: this.projectName,
           startDate: this.startDate,
           finishDate: this.finishDate,
           projectMembers: this.members,
+          memberIcons: memberIcons
         };
+
+        console.log(newProject);
+
         addDoc(collection(getFirestore(), 'projects'), newProject)
         .then(() => {
             getDocs(collection(getFirestore(), 'projects'))
@@ -113,6 +131,7 @@ export default {
                     startDate: doc.data().startDate,
                     finishDate: doc.data().finishDate,
                     projectMembers: doc.data().projectMembers,
+                    memberIcons: doc.data().memberIcons,
                     id: doc.id,
                     showDeletingProjectModal: false,
                     showEditingProjectModal: false,
@@ -151,8 +170,10 @@ export default {
     getDocs(collection(getFirestore(), 'users'))
     .then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
+          this.usersData.push(doc.data())
           this.userNames.push(doc.data().name)
         })
+
       }
     )
     .catch(() => {

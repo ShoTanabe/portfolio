@@ -13,8 +13,12 @@
               <p class="work-period">{{ project.startDate }} ～ {{ project.finishDate }}</p>
             </div>
             <div class="user-icons">
-              <img src="https://graph.facebook.com/1528282460874060/picture" alt="">
-              <img src="https://graph.facebook.com/1528282460874060/picture" alt="">
+              <div
+                v-for="(icon, i) in project.memberIcons"
+                :key="icon+i"
+                class="icon-img">
+                <img :src=icon alt="取得できません">
+              </div>
             </div>
           </div>
           <div class="card-right">
@@ -79,7 +83,8 @@ export default {
       showMakingProjectModal: false,
       openModalNmb: 0,
       projectsData: [],
-      userList: []
+      userList: [],
+      userIcons: []
     }
   },
   computed: {
@@ -95,7 +100,7 @@ export default {
     },
     projectList() {
       const allProjects = this.$store.getters.projectList;
-      let assignedProjects = [];
+      const assignedProjects = [];
       allProjects.forEach((value) => {
         if(value.projectMembers.indexOf(this.currentUserName) >= 0){
           assignedProjects.push(value);
@@ -133,6 +138,7 @@ export default {
             startDate: doc.data().startDate,
             finishDate: doc.data().finishDate,
             projectMembers: doc.data().projectMembers,
+            memberIcons: doc.data().memberIcons,
             id: doc.id,
             showDeletingProjectModal: false,
             showEditingProjectModal: false,
@@ -156,7 +162,7 @@ export default {
         console.log('storeアクセス失敗')
       })
 
-  }
+  },
 }
 </script>
 
@@ -242,16 +248,19 @@ export default {
           width: 90%;
         }
 
-        img {
-          border-radius: 50%;
-          width: 40px;
-          height: 40px;
+        .icon-img {
           margin-left: 5px;
 
         &:first-child {
           margin-left: 0px;
         }
 
+        }
+
+        img {
+          border-radius: 50%;
+          width: 40px;
+          height: 40px;
         }
       }
     }

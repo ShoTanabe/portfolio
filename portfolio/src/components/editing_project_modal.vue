@@ -72,6 +72,7 @@ export default {
       showFinishDateError: false,
       showFinishDateError2: false,
       projectsData: [],
+      usersData: [],
       userNames: []
     }
   },
@@ -104,24 +105,36 @@ export default {
       } else if (this.startDate > this.finishDate) {
         this.showFinishDateError2 = true;
       } else {
+
+        const memberIcons = [];
+        this.members.forEach((value) => {
+          for(let i = 0; i <= this.usersData.length-1; i++){
+            if(this.usersData[i].name == value){
+              memberIcons.push(this.usersData[i].iconPath);
+            }
+          }
+        })
+
         setDoc(doc(getFirestore(), 'projects', project.id), {
           projectName: this.projectName,
           startDate: this.startDate,
           finishDate: this.finishDate,
-          projectMembers: this.members
+          projectMembers: this.members,
+          memberIcons: memberIcons
         })
         .then(() => {
           getDocs(collection(getFirestore(), 'projects'))
           .then((querySnapshot) => {
               querySnapshot.forEach((doc) => {
                 const projectData = {
-                  projectName: doc.data().projectName,
-                  startDate: doc.data().startDate,
-                  finishDate: doc.data().finishDate,
-                  projectMembers: doc.data().projectMembers,
-                  id: doc.id,
-                  showDeletingProjectModal: false,
-                  showEditingProjectModal: false,
+                    projectName: doc.data().projectName,
+                    startDate: doc.data().startDate,
+                    finishDate: doc.data().finishDate,
+                    projectMembers: doc.data().projectMembers,
+                    memberIcons: doc.data().memberIcons,
+                    id: doc.id,
+                    showDeletingProjectModal: false,
+                    showEditingProjectModal: false,
                 }
                 this.projectsData.push(projectData)
               })
@@ -155,6 +168,7 @@ export default {
     getDocs(collection(getFirestore(), 'users'))
     .then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
+          this.usersData.push(doc.data())
           this.userNames.push(doc.data().name)
         })
       }

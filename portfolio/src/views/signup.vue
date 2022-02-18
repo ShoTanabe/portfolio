@@ -65,7 +65,7 @@ export default {
       name: '',
       address: '',
       password: '',
-      iconPath: '',
+      iconPath: 'https://firebasestorage.googleapis.com/v0/b/my-portfolio-c7f24.appspot.com/o/icon%2Fimage0.png?alt=media&token=d021e0f6-648b-4028-8436-8eec5cddf924',
       userList:[]
     }
   },

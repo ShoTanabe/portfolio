@@ -20,12 +20,6 @@ import {
   getFirestore,
   getDocs
   } from "firebase/firestore";
-import {
-  getStorage,
-  ref,
-  getDownloadURL,
-  listAll
-  } from "firebase/storage";
 
 export default {
   name: 'HomeHeader',
@@ -33,8 +27,7 @@ export default {
     return {
       userList: [],
       noImage: '',
-      userIcon: '',
-      iconsPath: []
+      userIcon: ''
     }
   },
   computed: {
@@ -50,17 +43,17 @@ export default {
     },
     currentUserIcon() {
       const currentUserEmail = this.$store.getters.currentUserEmail;
-      let userIcon = this.noImage;
+      let userIcon = '';
       this.userList.forEach((value) => {
         if(value.address === currentUserEmail) {
           userIcon = value.iconPath;
         }
         if(userIcon === '') {
-          userIcon = this.noImage;
+          userIcon = 'https://firebasestorage.googleapis.com/v0/b/my-portfolio-c7f24.appspot.com/o/icon%2Fimage0.png?alt=media&token=d021e0f6-648b-4028-8436-8eec5cddf924';
         }
       });
       return userIcon;
-    },
+    }
   },
   methods: {
     logout() {
@@ -81,36 +74,8 @@ export default {
         });
       })
       .catch(() => {
-        console.log('storeアクセス失敗')
+        console.log('「user」storeアクセス失敗')
       })
-
-    getDownloadURL(ref(getStorage(), 'icon/image0.png'))
-    .then((url) => {
-      this.noImage = url;
-      console.log(this.noImage);
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-
-    listAll(ref(getStorage(), 'icon'))
-    .then(res => {
-      res.items.forEach(itemRef => {
-        const iconName = itemRef.name;
-        getDownloadURL(ref(getStorage(), itemRef))
-        .then(url => {
-          this.iconsPath.push({iconName: iconName, iconUrl: url})
-        })
-        .catch(() => {
-          console.log('プリセットパスを取得できません')
-        })
-      })
-      console.log(this.iconsPath);
-
-    })
-    .catch((error) => {
-      console.log(error);
-    });
   }
 }
 </script>
