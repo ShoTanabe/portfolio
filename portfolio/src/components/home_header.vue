@@ -1,8 +1,8 @@
 <template>
     <div class="header clearfix">
       <div class="header-left">
-        <img :src="currentUserIcon" alt="" class="user-icon">
-        <p class="user-name">{{currentUserName}} 様</p>
+        <img :src="this.currentUser.iconPath" alt="" class="user-icon">
+        <p class="user-name">{{this.currentUser.name}} 様</p>
       </div>
       <div class="header-right">
         <div class="logout-btn" @click="logout">ログアウト</div>
@@ -31,15 +31,8 @@ export default {
     }
   },
   computed: {
-    currentUserName() {
-      const currentUserEmail = this.$store.getters.currentUserEmail;
-      let UserName = 'ユーザー名を取得できません';
-      this.userList.forEach((value) => {
-        if(value.address === currentUserEmail) {
-          UserName = value.name;
-        }
-      });
-      return UserName;
+    currentUser() {
+      return this.$store.getters.currentUser;
     },
     currentUserIcon() {
       const currentUserEmail = this.$store.getters.currentUserEmail;
@@ -59,7 +52,7 @@ export default {
     logout() {
       const auth = getAuth();
       signOut(auth).then(() => {
-          this.$store.commit('updateCurrentUserEmail', '');
+          this.$store.commit('updateCurrentUser', '');
           this.$router.push('/');
       }).catch((error) => {
         console.log(error);

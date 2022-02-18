@@ -1,18 +1,29 @@
 <template>
     <div class="header clearfix">
       <div class="header-left">
-        <p class="project-name">プロジェクト名</p>
-        <p class="work-period">開始日～終了日</p>
+        <p class="project-name">{{ currentProject.projectName }}</p>
+        <p class="work-period">{{ currentProject.startDate + '～' + currentProject.finishDate}}</p>
       </div>
       <div class="header-right">
-        <div class="home-btn">プロジェクト一覧へ</div>
+        <div class="home-btn"
+          @click="goHome">プロジェクト一覧へ</div>
       </div>
     </div>
 </template>
 
 <script>
 export default {
-  name: 'ProjectHeader'
+  name: 'ProjectHeader',
+  computed: {
+    currentProject() {
+      return this.$store.getters.currentProject;
+    }
+  },
+  methods: {
+    goHome() {
+      this.$router.push('/home');
+    }
+  }
 }
 </script>
 

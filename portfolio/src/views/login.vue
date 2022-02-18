@@ -61,8 +61,29 @@ export default {
       const auth = getAuth();
       signInWithEmailAndPassword(auth, this.address, this.password)
         .then(() => {
-          this.$store.commit('updateCurrentUserEmail', this.address);
-          this.$router.push('/home');
+          getDocs(collection(getFirestore(), 'users'))
+
+          .then((querySnapshot) => {
+            const list = [];
+            querySnapshot.forEach(doc => {
+              list.push(doc.data());
+            });
+            list.forEach((value) => {
+              if(value.address === this.address){
+                const userData = {
+                  name: value.name,
+                  address: value.address,
+                  password: '',
+                  iconPath: value.iconPath
+                }
+                this.$store.commit('updateCurrentUser', userData);
+                this.$router.push('/home');
+              }
+            })
+          })
+          .catch(() => {
+            console.log('storeアクセス失敗')
+          })
         })
         .catch((error) => {
           const errorCode = error.code;
@@ -104,16 +125,16 @@ export default {
                 this.userList.push(doc.data());
               });
               const list = this.userList;
+              const userData = {
+                name: user.displayName,
+                address: user.email,
+                password: '',
+                iconPath: user.photoURL
+              }
               if(list.some(list => list.address === user.email) === false){
-                const userData = {
-                  name: user.displayName,
-                  address: user.email,
-                  password: '',
-                  iconPath: user.photoURL
-                }
                 addDoc(collection(getFirestore(), 'users'), userData)
                 .then(() => {
-                  this.$store.commit('updateCurrentUserEmail', user.email);
+                  this.$store.commit('updateCurrentUser', userData);
                   this.$router.push('/home');
                   }
                 )
@@ -121,7 +142,7 @@ export default {
                   console.log('store失敗')
                 })
               } else {
-                this.$store.commit('updateCurrentUserEmail', user.email);
+                this.$store.commit('updateCurrentUser', userData);
                 this.$router.push('/home');
               }
             })
@@ -160,16 +181,16 @@ export default {
               });
               console.log(this.userList);
               const list = this.userList;
+              const userData = {
+                name: user.displayName,
+                address: user.email,
+                password: '',
+                iconPath: user.photoURL
+              }
               if(list.some(list => list.address === user.email) === false){
-                const userData = {
-                  name: user.displayName,
-                  address: user.email,
-                  password: '',
-                  iconPath: user.photoURL
-                }
                 addDoc(collection(getFirestore(), 'users'), userData)
                 .then(() => {
-                  this.$store.commit('updateCurrentUserEmail', user.email);
+                  this.$store.commit('updateCurrentUser', userData);
                   this.$router.push('/home');
                   }
                 )
@@ -177,7 +198,7 @@ export default {
                   console.log('store失敗')
                 })
               } else {
-                this.$store.commit('updateCurrentUserEmail', user.email);
+                this.$store.commit('updateCurrentUser', userData);
                 this.$router.push('/home');
               }
             })

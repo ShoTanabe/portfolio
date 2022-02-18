@@ -7,7 +7,9 @@
         <div class="project-card clearfix"
           v-for="project in projectList"
           :key="project.projectName">
-          <div class="card-left">
+          <div
+            @click="chooseProject(project)"
+            class="card-left">
             <div class="name-period">
               <p class="project-name">{{ project.projectName }}</p>
               <p class="work-period">{{ project.startDate }} ～ {{ project.finishDate }}</p>
@@ -88,21 +90,14 @@ export default {
     }
   },
   computed: {
-    currentUserName() {
-      const currentUserEmail = this.$store.getters.currentUserEmail;
-      let UserName = 'ユーザー名を取得できません';
-      this.userList.forEach((value) => {
-        if(value.address === currentUserEmail) {
-          UserName = value.name;
-        }
-      });
-      return UserName;
+    currentUser() {
+      return this.$store.getters.currentUser;
     },
     projectList() {
       const allProjects = this.$store.getters.projectList;
       const assignedProjects = [];
       allProjects.forEach((value) => {
-        if(value.projectMembers.indexOf(this.currentUserName) >= 0){
+        if(value.projectMembers.indexOf(this.currentUser.name) >= 0){
           assignedProjects.push(value);
         }
       })
@@ -128,6 +123,10 @@ export default {
     closeDeletingProjectModal(project) {
       project.showDeletingProjectModal = false;
     },
+    chooseProject(project) {
+      this.$store.commit('updateCurrentProject', project);
+      this.$router.push('/dashboard');
+    }
   },
   created() {
     getDocs(collection(getFirestore(), 'projects'))

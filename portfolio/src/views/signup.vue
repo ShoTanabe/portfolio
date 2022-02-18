@@ -139,16 +139,16 @@ export default {
                 this.userList.push(doc.data());
               });
               const list = this.userList;
+              const userData = {
+                name: user.displayName,
+                address: user.email,
+                password: '',
+                iconPath: user.photoURL
+              }
               if(list.some(list => list.address === user.email) === false){
-                const userData = {
-                  name: user.displayName,
-                  address: user.email,
-                  password: '',
-                  iconPath: user.photoURL
-                }
                 addDoc(collection(getFirestore(), 'users'), userData)
                 .then(() => {
-                  this.$store.commit('updateCurrentUserEmail', user.email);
+                  this.$store.commit('updateCurrentUser', userData);
                   this.$router.push('/home');
                   }
                 )
@@ -156,7 +156,7 @@ export default {
                   console.log('store失敗')
                 })
               } else {
-                this.$store.commit('updateCurrentUserEmail', user.email);
+                this.$store.commit('updateCurrentUser', userData);
                 this.$router.push('/home');
               }
             })
@@ -184,7 +184,12 @@ export default {
           // The signed-in user info.
           const user = result.user;
           console.log(user);
-
+          const userData = {
+            name: user.displayName,
+            address: user.email,
+            password: '',
+            iconPath: user.photoURL
+          }
           getDocs(collection(getFirestore(), 'users'))
             .then((querySnapshot) => {
               this.userList = [];
@@ -194,15 +199,9 @@ export default {
               console.log(this.userList);
               const list = this.userList;
               if(list.some(list => list.address === user.email) === false){
-                const userData = {
-                  name: user.displayName,
-                  address: user.email,
-                  password: '',
-                  iconPath: user.photoURL
-                }
                 addDoc(collection(getFirestore(), 'users'), userData)
                 .then(() => {
-                  this.$store.commit('updateCurrentUserEmail', user.email);
+                  this.$store.commit('updateCurrentUser', userData);
                   this.$router.push('/home');
                   }
                 )
@@ -210,7 +209,7 @@ export default {
                   console.log('store失敗')
                 })
               } else {
-                this.$store.commit('updateCurrentUserEmail', user.email);
+                this.$store.commit('updateCurrentUser', userData);
                 this.$router.push('/home');
               }
             })
