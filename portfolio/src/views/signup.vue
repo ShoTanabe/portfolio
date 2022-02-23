@@ -120,14 +120,6 @@ export default {
       const auth = getAuth();
       signInWithPopup(auth, provider)
         .then((result) => {
-          // This gives you a the Twitter OAuth 1.0 Access Token and Secret.
-          // You can use these server side with your app's credentials to access the Twitter API.
-          const credential = TwitterAuthProvider.credentialFromResult(result);
-          const token = credential.accessToken;
-          const secret = credential.secret;
-
-          console.log(token);
-          console.log(secret);
 
           // The signed-in user info.
           const user = result.user;
@@ -136,7 +128,7 @@ export default {
             .then((querySnapshot) => {
               this.userList = [];
               querySnapshot.forEach(doc => {
-                this.userList.push(doc.data());
+                this.userList.push(doc);
               });
               const list = this.userList;
               const userData = {
@@ -145,9 +137,10 @@ export default {
                 password: '',
                 iconPath: user.photoURL
               }
-              if(list.some(list => list.address === user.email) === false){
+              if(list.some(list => list.data().address === user.email) === false){
                 addDoc(collection(getFirestore(), 'users'), userData)
-                .then(() => {
+                .then((doc) => {
+                  userData.id = doc.id;
                   this.$store.commit('updateCurrentUser', userData);
                   this.$router.push('/home');
                   }
@@ -156,8 +149,13 @@ export default {
                   console.log('store失敗')
                 })
               } else {
-                this.$store.commit('updateCurrentUser', userData);
-                this.$router.push('/home');
+                list.forEach(list => {
+                  if(user.email === list.data().address) {
+                    userData.id = list.id;
+                    this.$store.commit('updateCurrentUser', userData);
+                  }
+                })
+                  this.$router.push('/home');
               }
             })
             .catch(() => {
@@ -194,13 +192,14 @@ export default {
             .then((querySnapshot) => {
               this.userList = [];
               querySnapshot.forEach(doc => {
-                this.userList.push(doc.data());
+                this.userList.push(doc);
               });
               console.log(this.userList);
               const list = this.userList;
-              if(list.some(list => list.address === user.email) === false){
+              if(list.some(list => list.data().address === user.email) === false){
                 addDoc(collection(getFirestore(), 'users'), userData)
-                .then(() => {
+                .then((doc) => {
+                  userData.id = doc.id;
                   this.$store.commit('updateCurrentUser', userData);
                   this.$router.push('/home');
                   }
@@ -209,8 +208,13 @@ export default {
                   console.log('store失敗')
                 })
               } else {
-                this.$store.commit('updateCurrentUser', userData);
-                this.$router.push('/home');
+                list.forEach(list => {
+                  if(user.email === list.data().address) {
+                    userData.id = list.id;
+                    this.$store.commit('updateCurrentUser', userData);
+                  }
+                })
+                  this.$router.push('/home');
               }
             })
             .catch(() => {
@@ -232,11 +236,9 @@ export default {
   created() {
     getDocs(collection(getFirestore(), 'users'))
       .then((querySnapshot) => {
-        console.log(querySnapshot);
         querySnapshot.forEach(doc => {
           this.userList.push(doc.data());
         });
-        console.log(this.userList);
       })
       .catch(() => {
         console.log('storeアクセス失敗')

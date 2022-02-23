@@ -69,8 +69,7 @@ export default {
       showFinishDateError2: false,
       usersData: [],
       userNames: [],
-      projectsData: []
-    }
+}
   },
   computed: {
     projectList() {
@@ -102,43 +101,40 @@ export default {
         this.showFinishDateError2 = true;
       } else {
 
-        const memberIcons = [];
+        const projectMembers = [];
         this.members.forEach((value) => {
           for(let i = 0; i <= this.usersData.length-1; i++){
             if(this.usersData[i].name == value){
-              memberIcons.push(this.usersData[i].iconPath);
+              projectMembers.push({ name: this.usersData[i].name , iconPath:this.usersData[i].iconPath });
             }
           }
         })
-        
+
         const newProject = {
           projectName: this.projectName,
           startDate: this.startDate,
           finishDate: this.finishDate,
-          projectMembers: this.members,
-          memberIcons: memberIcons
+          projectMembers: projectMembers
         };
-
-        console.log(newProject);
 
         addDoc(collection(getFirestore(), 'projects'), newProject)
         .then(() => {
             getDocs(collection(getFirestore(), 'projects'))
             .then((querySnapshot) => {
+                const projectsData = []
                 querySnapshot.forEach((doc) => {
                   const projectData = {
                     projectName: doc.data().projectName,
                     startDate: doc.data().startDate,
                     finishDate: doc.data().finishDate,
                     projectMembers: doc.data().projectMembers,
-                    memberIcons: doc.data().memberIcons,
                     id: doc.id,
                     showDeletingProjectModal: false,
                     showEditingProjectModal: false,
                   }
-                  this.projectsData.push(projectData)
+                  projectsData.push(projectData)
                 })
-                this.$store.commit('updateProjectList', this.projectsData);
+                this.$store.commit('updateProjectList', projectsData);
               }
             )
             .catch(() => {

@@ -1,7 +1,11 @@
 <template>
     <div class="header clearfix">
       <div class="header-left">
-        <img :src="this.currentUser.iconPath" alt="" class="user-icon">
+        <img
+          :src="this.currentUser.iconPath"
+          @click="openEditingUserDataModal"
+          alt=""
+          class="user-icon">
         <p class="user-name">{{this.currentUser.name}} 様</p>
       </div>
       <div class="header-right">
@@ -57,7 +61,10 @@ export default {
       }).catch((error) => {
         console.log(error);
       });
-    }
+    },
+    openEditingUserDataModal() {
+      this.$emit('openEditingUserDataModal');
+    },
   },
   created() {
     getDocs(collection(getFirestore(), 'users'))
@@ -87,6 +94,10 @@ export default {
       line-height: 40px;
       display: flex;
       justify-content: center;
+
+      img {
+        cursor: pointer;
+      }
 
       .user-icon {
         width: 40px;

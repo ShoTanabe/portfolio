@@ -17,6 +17,7 @@ export default new Vuex.Store({
 	state: {
 		projectList: [],
 		currentUser: {
+			id: '',
 			name: '',
 			address: '',
 			password: '',
@@ -27,7 +28,6 @@ export default new Vuex.Store({
 			startDate: '',
 			finishDate: '',
 			projectMembers: [],
-			memberIcons: [],
 			id: '',
 			showDeletingProjectModal: false,
 			showEditingProjectModal: false,

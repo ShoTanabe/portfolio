@@ -66,15 +66,16 @@ export default {
           .then((querySnapshot) => {
             const list = [];
             querySnapshot.forEach(doc => {
-              list.push(doc.data());
+              list.push(doc);
             });
             list.forEach((value) => {
-              if(value.address === this.address){
+              if(value.data().address === this.address){
                 const userData = {
-                  name: value.name,
-                  address: value.address,
+                  id: value.id,
+                  name: value.data().name,
+                  address: value.data().address,
                   password: '',
-                  iconPath: value.iconPath
+                  iconPath: value.data().iconPath
                 }
                 this.$store.commit('updateCurrentUser', userData);
                 this.$router.push('/home');
@@ -106,14 +107,6 @@ export default {
       const auth = getAuth();
       signInWithPopup(auth, provider)
         .then((result) => {
-          // This gives you a the Twitter OAuth 1.0 Access Token and Secret.
-          // You can use these server side with your app's credentials to access the Twitter API.
-          const credential = TwitterAuthProvider.credentialFromResult(result);
-          const token = credential.accessToken;
-          const secret = credential.secret;
-
-          console.log(token);
-          console.log(secret);
 
           // The signed-in user info.
           const user = result.user;
@@ -122,7 +115,7 @@ export default {
             .then((querySnapshot) => {
               this.userList = [];
               querySnapshot.forEach(doc => {
-                this.userList.push(doc.data());
+                this.userList.push(doc);
               });
               const list = this.userList;
               const userData = {
@@ -131,9 +124,10 @@ export default {
                 password: '',
                 iconPath: user.photoURL
               }
-              if(list.some(list => list.address === user.email) === false){
+              if(list.some(list => list.data().address === user.email) === false) {
                 addDoc(collection(getFirestore(), 'users'), userData)
-                .then(() => {
+                .then((doc) => {
+                  userData.id = doc.id;
                   this.$store.commit('updateCurrentUser', userData);
                   this.$router.push('/home');
                   }
@@ -142,8 +136,13 @@ export default {
                   console.log('store失敗')
                 })
               } else {
-                this.$store.commit('updateCurrentUser', userData);
-                this.$router.push('/home');
+                list.forEach(list => {
+                  if(user.email === list.data().address) {
+                    userData.id = list.id;
+                    this.$store.commit('updateCurrentUser', userData);
+                  }
+                })
+                  this.$router.push('/home');
               }
             })
             .catch(() => {
@@ -169,7 +168,6 @@ export default {
         .then((result) => {
           // The signed-in user info.
           const user = result.user;
-          console.log(user);
 
           // This gives you a Facebook Access Token. You can use it to access the Facebook API.
 
@@ -177,7 +175,7 @@ export default {
             .then((querySnapshot) => {
               this.userList = [];
               querySnapshot.forEach(doc => {
-                this.userList.push(doc.data());
+                this.userList.push(doc);
               });
               console.log(this.userList);
               const list = this.userList;
@@ -187,9 +185,10 @@ export default {
                 password: '',
                 iconPath: user.photoURL
               }
-              if(list.some(list => list.address === user.email) === false){
+              if(list.some(list => list.data().address === user.email) === false){
                 addDoc(collection(getFirestore(), 'users'), userData)
-                .then(() => {
+                .then((doc) => {
+                  userData.id = doc.id;
                   this.$store.commit('updateCurrentUser', userData);
                   this.$router.push('/home');
                   }
@@ -198,7 +197,12 @@ export default {
                   console.log('store失敗')
                 })
               } else {
-                this.$store.commit('updateCurrentUser', userData);
+                list.forEach(list => {
+                  if(user.email === list.data().address) {
+                    userData.id = list.id;
+                    this.$store.commit('updateCurrentUser', userData);
+                  }
+                })
                 this.$router.push('/home');
               }
             })
