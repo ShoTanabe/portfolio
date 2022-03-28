@@ -1,18 +1,27 @@
 <template>
   <div class="container">
-    <HomeHeader></HomeHeader>
+    <HomeHeader @openEditingUserDataModal="openEditingUserDataModal()"></HomeHeader>
     <div class="displayed">
       <h2>参加中のプロジェクト</h2>
       <div class="projects-area">
         <div class="project-card clearfix"
           v-for="project in projectList"
           :key="project.projectName">
-          <div class="card-left">
+          <div
+            @click="chooseProject(project)"
+            class="card-left">
             <div class="name-period">
               <p class="project-name">{{ project.projectName }}</p>
               <p class="work-period">{{ project.startDate }} ～ {{ project.finishDate }}</p>
             </div>
-            <div class="user-icons">プロジェクトユーザーアイコン</div>
+            <div class="user-icons">
+              <div
+                v-for="(memberData, i) in project.projectMembers"
+                :key="memberData.name+i"
+                class="icon-img">
+                <img :src=memberData.iconPath alt="取得できません">
+              </div>
+            </div>
           </div>
           <div class="card-right">
             <div class="close-btn"
@@ -48,6 +57,11 @@
         @closeMakingProjectModal="closeMakingProjectModal">
       </MakingProjectModal>
     </div>
+    <div v-if="showEditingUserDataModal" v-cloak>
+      <EditingUserDataModal
+        @closeEditingUserDataModal="closeEditingUserDataModal">
+      </EditingUserDataModal>
+    </div>
   </div>
 </template>
 
@@ -56,6 +70,7 @@ import HomeHeader from '@/components/home_header.vue'
 import MakingProjectModal from '@/components/making_project_modal.vue'
 import EditingProjectModal from '@/components/editing_project_modal.vue'
 import DeletingProjectModal from '@/components/deleting_project_modal.vue'
+import EditingUserDataModal from '@/components/editing_userdata_modal.vue'
 
 import {
   collection,
@@ -69,38 +84,38 @@ export default {
     HomeHeader,
     MakingProjectModal,
     EditingProjectModal,
-    DeletingProjectModal
+    DeletingProjectModal,
+    EditingUserDataModal
   },
   data() {
     return {
       showMakingProjectModal: false,
+      showEditingUserDataModal: false,
       openModalNmb: 0,
       projectsData: [],
-      userList: []
+      userList: [],
+      userIcons: []
     }
   },
   computed: {
-    currentUserName() {
-      const currentUserEmail = this.$store.getters.currentUserEmail;
-      let UserName = 'ユーザー名を取得できません';
-      this.userList.forEach((value) => {
-        if(value.address === currentUserEmail) {
-          UserName = value.name;
-        }
-        return UserName;
-      });
-      return UserName;
+    currentUser() {
+      return this.$store.getters.currentUser;
     },
     projectList() {
       const allProjects = this.$store.getters.projectList;
-      let assignedProjects = [];
+      const assignedProjects = [];
       allProjects.forEach((value) => {
-        if(value.projectMembers.indexOf(this.currentUserName) >= 0){
-          assignedProjects.push(value);
-        }
+        value.projectMembers.forEach((memberData) => {
+          if(memberData.name === this.currentUser.name) {
+            assignedProjects.push(value)
+          }
+        })
+        // if(value.projectMembers.indexOf({name: this.currentUser.name, iconPath: this.currentUser.iconPath}) >= 0){
+        //   assignedProjects.push(value);
+        // }
       })
       return assignedProjects;
-    }
+    },
   },
   methods: {
     openMakingProjectModal() {
@@ -121,6 +136,16 @@ export default {
     closeDeletingProjectModal(project) {
       project.showDeletingProjectModal = false;
     },
+    openEditingUserDataModal() {
+      this.showEditingUserDataModal = true;
+    },
+    closeEditingUserDataModal() {
+      this.showEditingUserDataModal = false;
+    },
+    chooseProject(project) {
+      this.$store.commit('updateCurrentProject', project);
+      this.$router.push('/dashboard');
+    }
   },
   created() {
     getDocs(collection(getFirestore(), 'projects'))
@@ -138,6 +163,7 @@ export default {
           this.projectsData.push(projectData)
         })
         this.$store.commit('updateProjectList', this.projectsData);
+        // console.log(this.$store.getters.projectList[1].projectMembers[0].iconPath)
       }
     )
     .catch(() => {
@@ -154,7 +180,7 @@ export default {
         console.log('storeアクセス失敗')
       })
 
-  }
+  },
 }
 </script>
 
@@ -231,12 +257,28 @@ export default {
         margin: 0 10px 0 50px ;
         padding: 30px 20px;
         width: 60%;
+        display: flex;
 
         @media screen and (max-width: 760px) {
           text-align: center;
           margin: 0 0 15px 0;
           padding: 0;
           width: 90%;
+        }
+
+        .icon-img {
+          margin-left: 5px;
+
+        &:first-child {
+          margin-left: 0px;
+        }
+
+        }
+
+        img {
+          border-radius: 50%;
+          width: 40px;
+          height: 40px;
         }
       }
     }
@@ -270,11 +312,6 @@ export default {
         }
       }
   }
-
-
-
-
-
 
 }
 

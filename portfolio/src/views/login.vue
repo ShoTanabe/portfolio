@@ -23,8 +23,8 @@
         <button class="stretched-link" type="button" @click="login">ログイン</button>
       </div>
       <div class="flex-container sns-btns">
-        <div class="fb-btn"><i class="fab fa-facebook-f"></i> facebookでログイン</div>
-        <div class="tw-btn"><i class="fab fa-twitter"></i> twitterでログイン</div>
+        <div class="fb-btn" @click="facebookLogin"><i class="fab fa-facebook-f"></i> facebookでログイン</div>
+        <div class="tw-btn" @click="twitterLogin"><i class="fab fa-twitter"></i> twitterでログイン</div>
       </div>
       <router-link to="/signup"><p class="sf-link">新規登録はこちらから</p></router-link>
     </form>
@@ -32,14 +32,27 @@
 </template>
 
 <script>
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  TwitterAuthProvider,
+  FacebookAuthProvider
+  } from "firebase/auth";
+import {
+  collection,
+  addDoc,
+  getFirestore,
+  getDocs
+  } from "firebase/firestore";
 
 export default {
   data() {
     return {
       address: '',
       password: '',
-      failed: false
+      failed: false,
+      userList: []
     }
   },
   methods: {
@@ -48,8 +61,30 @@ export default {
       const auth = getAuth();
       signInWithEmailAndPassword(auth, this.address, this.password)
         .then(() => {
-          this.$store.commit('updateCurrentUserEmail', this.address);
-          this.$router.push('/home');
+          getDocs(collection(getFirestore(), 'users'))
+
+          .then((querySnapshot) => {
+            const list = [];
+            querySnapshot.forEach(doc => {
+              list.push(doc);
+            });
+            list.forEach((value) => {
+              if(value.data().address === this.address){
+                const userData = {
+                  id: value.id,
+                  name: value.data().name,
+                  address: value.data().address,
+                  password: '',
+                  iconPath: value.data().iconPath
+                }
+                this.$store.commit('updateCurrentUser', userData);
+                this.$router.push('/home');
+              }
+            })
+          })
+          .catch(() => {
+            console.log('storeアクセス失敗')
+          })
         })
         .catch((error) => {
           const errorCode = error.code;
@@ -65,6 +100,126 @@ export default {
     },
     resetResultMessage() {
       this.failed = false;
+    },
+    twitterLogin() {
+      const provider = new TwitterAuthProvider();
+
+      const auth = getAuth();
+      signInWithPopup(auth, provider)
+        .then((result) => {
+
+          // The signed-in user info.
+          const user = result.user;
+
+          getDocs(collection(getFirestore(), 'users'))
+            .then((querySnapshot) => {
+              this.userList = [];
+              querySnapshot.forEach(doc => {
+                this.userList.push(doc);
+              });
+              const list = this.userList;
+              const userData = {
+                name: user.displayName,
+                address: user.email,
+                password: '',
+                iconPath: user.photoURL
+              }
+              if(list.some(list => list.data().address === user.email) === false) {
+                addDoc(collection(getFirestore(), 'users'), userData)
+                .then((doc) => {
+                  userData.id = doc.id;
+                  this.$store.commit('updateCurrentUser', userData);
+                  this.$router.push('/home');
+                  }
+                )
+                .catch(() => {
+                  console.log('store失敗')
+                })
+              } else {
+                list.forEach(list => {
+                  if(user.email === list.data().address) {
+                    userData.id = list.id;
+                    this.$store.commit('updateCurrentUser', userData);
+                  }
+                })
+                  this.$router.push('/home');
+              }
+            })
+            .catch(() => {
+              console.log('storeアクセス失敗')
+            })
+
+          // ...
+        }).catch((error) => {
+          // Handle Errors here.
+          const errorCode = error.code;
+          const errorMessage = error.message;
+
+          console.log(errorCode);
+          console.log(errorMessage);
+
+        });
+
+    },
+    facebookLogin() {
+      const provider = new FacebookAuthProvider();
+      const auth = getAuth();
+      signInWithPopup(auth, provider)
+        .then((result) => {
+          // The signed-in user info.
+          const user = result.user;
+
+          // This gives you a Facebook Access Token. You can use it to access the Facebook API.
+
+          getDocs(collection(getFirestore(), 'users'))
+            .then((querySnapshot) => {
+              this.userList = [];
+              querySnapshot.forEach(doc => {
+                this.userList.push(doc);
+              });
+              console.log(this.userList);
+              const list = this.userList;
+              const userData = {
+                name: user.displayName,
+                address: user.email,
+                password: '',
+                iconPath: user.photoURL
+              }
+              if(list.some(list => list.data().address === user.email) === false){
+                addDoc(collection(getFirestore(), 'users'), userData)
+                .then((doc) => {
+                  userData.id = doc.id;
+                  this.$store.commit('updateCurrentUser', userData);
+                  this.$router.push('/home');
+                  }
+                )
+                .catch(() => {
+                  console.log('store失敗')
+                })
+              } else {
+                list.forEach(list => {
+                  if(user.email === list.data().address) {
+                    userData.id = list.id;
+                    this.$store.commit('updateCurrentUser', userData);
+                  }
+                })
+                this.$router.push('/home');
+              }
+            })
+            .catch(() => {
+              console.log('storeアクセス失敗')
+            })
+
+        })
+        .catch((error) => {
+          // Handle Errors here.
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          console.log(errorCode);
+          console.log(errorMessage);
+
+        });
+
     }
   }
 }
@@ -92,6 +247,7 @@ export default {
     border-radius: 4px;
     width: 200px;
     text-align: center;
+    cursor: pointer;
   }
 
   .tw-btn {
@@ -103,6 +259,7 @@ export default {
     border-radius: 4px;
     width: 200px;
     text-align: center;
+    cursor: pointer;
   }
 
 </style>

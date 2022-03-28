@@ -65,7 +65,7 @@ export default {
       name: '',
       address: '',
       password: '',
-      iconPath: 'https://graph.facebook.com/1528282460874060/picture',
+      iconPath: 'https://firebasestorage.googleapis.com/v0/b/my-portfolio-c7f24.appspot.com/o/icon%2Fimage0.png?alt=media&token=d021e0f6-648b-4028-8436-8eec5cddf924',
       userList:[]
     }
   },
@@ -120,14 +120,6 @@ export default {
       const auth = getAuth();
       signInWithPopup(auth, provider)
         .then((result) => {
-          // This gives you a the Twitter OAuth 1.0 Access Token and Secret.
-          // You can use these server side with your app's credentials to access the Twitter API.
-          const credential = TwitterAuthProvider.credentialFromResult(result);
-          const token = credential.accessToken;
-          const secret = credential.secret;
-
-          console.log(token);
-          console.log(secret);
 
           // The signed-in user info.
           const user = result.user;
@@ -136,35 +128,39 @@ export default {
             .then((querySnapshot) => {
               this.userList = [];
               querySnapshot.forEach(doc => {
-                this.userList.push(doc.data());
+                this.userList.push(doc);
               });
-              console.log(this.userList);
               const list = this.userList;
-              if(list.some(list => list.address === user.email) === false){
-                const userData = {
-                  name: user.displayName,
-                  address: user.email,
-                  password: '',
-                  iconPath: user.photoURL
-                }
+              const userData = {
+                name: user.displayName,
+                address: user.email,
+                password: '',
+                iconPath: user.photoURL
+              }
+              if(list.some(list => list.data().address === user.email) === false){
                 addDoc(collection(getFirestore(), 'users'), userData)
-                .then(() => {
-                  console.log('store完了')
-                  this.success = true;
+                .then((doc) => {
+                  userData.id = doc.id;
+                  this.$store.commit('updateCurrentUser', userData);
+                  this.$router.push('/home');
                   }
                 )
                 .catch(() => {
                   console.log('store失敗')
                 })
               } else {
-                console.log('もう登録済み');
+                list.forEach(list => {
+                  if(user.email === list.data().address) {
+                    userData.id = list.id;
+                    this.$store.commit('updateCurrentUser', userData);
+                  }
+                })
+                  this.$router.push('/home');
               }
             })
             .catch(() => {
               console.log('storeアクセス失敗')
             })
-
-
 
           // ...
         }).catch((error) => {
@@ -186,45 +182,44 @@ export default {
           // The signed-in user info.
           const user = result.user;
           console.log(user);
-
-          // This gives you a Facebook Access Token. You can use it to access the Facebook API.
-          const credential = FacebookAuthProvider.credentialFromResult(result);
-          const accessToken = credential.accessToken;
-          console.log(accessToken);
-
+          const userData = {
+            name: user.displayName,
+            address: user.email,
+            password: '',
+            iconPath: user.photoURL
+          }
           getDocs(collection(getFirestore(), 'users'))
             .then((querySnapshot) => {
               this.userList = [];
               querySnapshot.forEach(doc => {
-                this.userList.push(doc.data());
+                this.userList.push(doc);
               });
               console.log(this.userList);
               const list = this.userList;
-              if(list.some(list => list.address === user.email) === false){
-                const userData = {
-                  name: user.displayName,
-                  address: user.email,
-                  password: '',
-                  iconPath: user.photoURL
-                }
+              if(list.some(list => list.data().address === user.email) === false){
                 addDoc(collection(getFirestore(), 'users'), userData)
-                .then(() => {
-                  console.log('store完了')
-                  this.success = true;
+                .then((doc) => {
+                  userData.id = doc.id;
+                  this.$store.commit('updateCurrentUser', userData);
+                  this.$router.push('/home');
                   }
                 )
                 .catch(() => {
                   console.log('store失敗')
                 })
               } else {
-                console.log('もう登録済み');
+                list.forEach(list => {
+                  if(user.email === list.data().address) {
+                    userData.id = list.id;
+                    this.$store.commit('updateCurrentUser', userData);
+                  }
+                })
+                  this.$router.push('/home');
               }
             })
             .catch(() => {
               console.log('storeアクセス失敗')
             })
-
-
 
         })
         .catch((error) => {
@@ -239,19 +234,15 @@ export default {
     }
   },
   created() {
-
-      getDocs(collection(getFirestore(), 'users'))
-        .then((querySnapshot) => {
-          console.log(querySnapshot);
-          querySnapshot.forEach(doc => {
-            this.userList.push(doc.data());
-          });
-          console.log(this.userList);
-        })
-        .catch(() => {
-          console.log('storeアクセス失敗')
-        })
-
+    getDocs(collection(getFirestore(), 'users'))
+      .then((querySnapshot) => {
+        querySnapshot.forEach(doc => {
+          this.userList.push(doc.data());
+        });
+      })
+      .catch(() => {
+        console.log('storeアクセス失敗')
+      })
   }
 }
 </script>

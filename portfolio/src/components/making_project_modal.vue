@@ -27,7 +27,10 @@
             </p>
             <p class="modal-text">参加ユーザー</p>
             <div class="modal-textbox">
-              <div v-for="(userName, i) in userNames" :key="i" class="user-select">
+              <div
+              v-for="(userName, i) in userNames"
+              :key="i"
+              class="user-select">
                 <label :for="userName+i">
                 <input
                   :id="userName+i"
@@ -64,9 +67,9 @@ export default {
       showStartDateError: false,
       showFinishDateError: false,
       showFinishDateError2: false,
+      usersData: [],
       userNames: [],
-      projectsData: []
-    }
+}
   },
   computed: {
     projectList() {
@@ -97,16 +100,28 @@ export default {
       } else if (this.startDate > this.finishDate) {
         this.showFinishDateError2 = true;
       } else {
+
+        const projectMembers = [];
+        this.members.forEach((value) => {
+          for(let i = 0; i <= this.usersData.length-1; i++){
+            if(this.usersData[i].name == value){
+              projectMembers.push({ name: this.usersData[i].name , iconPath:this.usersData[i].iconPath });
+            }
+          }
+        })
+
         const newProject = {
           projectName: this.projectName,
           startDate: this.startDate,
           finishDate: this.finishDate,
-          projectMembers: this.members,
+          projectMembers: projectMembers
         };
+
         addDoc(collection(getFirestore(), 'projects'), newProject)
         .then(() => {
             getDocs(collection(getFirestore(), 'projects'))
             .then((querySnapshot) => {
+                const projectsData = []
                 querySnapshot.forEach((doc) => {
                   const projectData = {
                     projectName: doc.data().projectName,
@@ -117,10 +132,9 @@ export default {
                     showDeletingProjectModal: false,
                     showEditingProjectModal: false,
                   }
-                  this.projectsData.push(projectData)
+                  projectsData.push(projectData)
                 })
-                this.$store.commit('updateProjectList', this.projectsData);
-                console.log(this.projectList);
+                this.$store.commit('updateProjectList', projectsData);
               }
             )
             .catch(() => {
@@ -152,8 +166,10 @@ export default {
     getDocs(collection(getFirestore(), 'users'))
     .then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
+          this.usersData.push(doc.data())
           this.userNames.push(doc.data().name)
         })
+
       }
     )
     .catch(() => {
